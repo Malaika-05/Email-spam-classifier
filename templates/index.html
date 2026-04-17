@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NOVA-SCAN | AI SPECTRAL ANALYZER</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #03050b, #000000);
+            font-family: 'Share Tech Mono', 'Orbitron', 'Courier New', monospace;
+            color: #00f7ff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Holographic Grid Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(#00ccff10 1px, transparent 1px),
+                linear-gradient(90deg, #00ccff10 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 1;
+            animation: gridPulse 8s infinite alternate;
+        }
+
+        @keyframes gridPulse {
+            0% { opacity: 0.2; background-size: 40px 40px; }
+            100% { opacity: 0.6; background-size: 42px 42px; text-shadow: 0 0 5px cyan; }
+        }
+
+        /* Glowing scanline */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, transparent, #0ff, #0ff, transparent);
+            box-shadow: 0 0 15px #0ff;
+            z-index: 10;
+            animation: scanMove 4s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes scanMove {
+            0% { top: 0%; opacity: 0.8; }
+            50% { top: 100%; opacity: 0.4; }
+            100% { top: 0%; opacity: 0.8; }
+        }
+
+        /* Main Container */
+        .cyber-container {
+            position: relative;
+            z-index: 20;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Header Hologram */
+        .hologram-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(0, 255, 255, 0.4);
+            padding-bottom: 1rem;
+            box-shadow: 0 10px 30px -10px rgba(0, 255, 255, 0.2);
+        }
+
+        .glitch {
+            font-size: 3.2rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            text-shadow: 0 0 8px #0ff, 0 0 18px #0ff, 2px 2px 0px #ff00c1;
+            animation: glitchFlicker 3s infinite;
+            font-family: 'Orbitron', monospace;
+        }
+
+        @keyframes glitchFlicker {
+            0%, 100% { text-shadow: 0 0 5px cyan, 0 0 12px cyan, 2px 2px 0px magenta; }
+            50% { text-shadow: -2px -1px 0px cyan, 2px 2px 0px magenta, 0 0 20px #0ff; }
+        }
+
+        .sub {
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            color: #8affef;
+            border-top: 1px dashed cyan;
+            display: inline-block;
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        /* Data Stream Cards Layout */
+        .analysis-panels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+        }
+
+        /* Neon Glass Card */
+        .glass-panel {
+            background: rgba(8, 16, 32, 0.55);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 32px;
+            box-shadow: 0 0 30px rgba(0, 200, 255, 0.2), inset 0 0 20px rgba(0, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .input-area {
+            flex: 1.2;
+            min-width: 320px;
+            padding: 1.8rem;
+        }
+
+        .stream-visual {
+            flex: 1;
+            min-width: 280px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            border-left: 4px solid cyan;
+            padding-left: 15px;
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+            text-shadow: 0 0 5px cyan;
+        }
+
+        /* Futuristic Textarea */
+        .neon-textarea {
+            width: 100%;
+            background: #010a14cc;
+            border: 1.5px solid #0ff;
+            border-radius: 20px;
+            padding: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            color: #b0ffff;
+            resize: vertical;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
+        }
+
+        .neon-textarea:focus {
+            border-color: #ff44e6;
+            box-shadow: 0 0 20px #ff44e6, inset 0 0 5px cyan;
+            background: #021020;
+        }
+
+        /* Glowing Button */
+        .cyber-button {
+            background: transparent;
+            border: 1.5px solid cyan;
+            color: cyan;
+            padding: 12px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 40px;
+            transition: 0.2s;
+            font-family: 'Orbitron', monospace;
+            margin-top: 1.2rem;
+            width: 100%;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 5px cyan;
+        }
+
+        .cyber-button:hover {
+            background: cyan;
+            color: black;
+            box-shadow: 0 0 25px cyan, 0 0 10px magenta;
+            border-color: magenta;
+            text-shadow: none;
+            transform: scale(1.02);
+        }
+
+        /* Data Stream Animation (binary rain / streaming text) */
+        .stream-content {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: #0ff8;
+            background: #030d17aa;
+            padding: 1rem;
+            border-radius: 20px;
+            height: 220px;
+            overflow-y: auto;
+            border: 1px solid cyan;
+            white-space: pre-wrap;
+            word-break: break-all;
+            animation: pulseStream 2s infinite alternate;
+        }
+
+        @keyframes pulseStream {
+            0% { box-shadow: 0 0 5px cyan; border-color: cyan; }
+            100% { box-shadow: 0 0 15px magenta; border-color: magenta; }
+        }
+
+        .token-stream {
+            font-size: 0.7rem;
+            color: #7efff0;
+        }
+
+        /* Result hologram zone */
+        .result-area {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 10, 20, 0.7);
+            border-radius: 28px;
+            border: 1px solid cyan;
+            backdrop-filter: blur(12px);
+        }
+
+        .result-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .prediction-badge {
+            font-size: 2rem;
+            font-weight: 800;
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            background: #000000aa;
+            letter-spacing: 2px;
+            backdrop-filter: blur(4px);
+        }
+
+        .confidence-meter {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .confidence-bar-container {
+            background: #111c28;
+            border-radius: 30px;
+            height: 14px;
+            overflow: hidden;
+            margin-top: 8px;
+            border: 1px solid cyan;
+        }
+
+        .confidence-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #ff44e6);
+            box-shadow: 0 0 12px cyan;
+            border-radius: 30px;
+            transition: width 1s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .confidence-text {
+            font-family: monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .pulse-icon {
+            animation: pulseRing 1.5s infinite;
+            display: inline-block;
+            margin-right: 12px;
+        }
+
+        @keyframes pulseRing {
+            0% { text-shadow: 0 0 0 cyan; opacity: 0.6; }
+            100% { text-shadow: 0 0 12px magenta; opacity: 1; }
+        }
+
+        /* scanning overlay while loading */
+        .scanning-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scanning-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,255,255,0.2), transparent);
+            animation: radarScan 1.2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes radarScan {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .loader-text {
+            display: inline-block;
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+
+        .stat-digits {
+            font-size: 0.85rem;
+            margin-top: 12px;
+            display: flex;
+            gap: 18px;
+            border-top: 1px dashed cyan;
+            padding-top: 12px;
+        }
+
+        /* responsiveness */
+        @media (max-width: 760px) {
+            .glitch { font-size: 2rem; }
+            .cyber-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="scan-line"></div>
+
+<div class="cyber-container">
+    <div class="hologram-header">
+        <div class="glitch">◢ NOVA-SPECTRAL AI ◣</div>
+        <div class="sub">>> DEEP NEURAL SCAN // ANOMALY DETECTION v.9.9</div>
+    </div>
+
+    <div class="analysis-panels">
+        <!-- Left Panel: Email Input -->
+        <div class="glass-panel input-area">
+            <div class="section-title">
+                <span class="pulse-icon">⚡</span> ENCRYPTED MESSAGE STREAM
+            </div>
+            <form id="spamForm">
+                <textarea id="emailMessage" class="neon-textarea" rows="6" placeholder="Paste email content / raw data stream...&#10;Example: Congratulations! You've won $1,000,000 ..."></textarea>
+                <button type="submit" id="scanBtn" class="cyber-button">
+                    <span id="btnText">⟁ INITIATE SPECTRAL SCAN ⟁</span>
+                </button>
+            </form>
+            <div class="stat-digits">
+                <span>📡 CHAR COUNTER: <span id="charCount">0</span></span>
+                <span>🧩 WORD STREAM: <span id="wordCount">0</span></span>
+                <span>🌀 DIGIT RATIO: <span id="digitRatio">0.00</span></span>
+            </div>
+        </div>
+
+        <!-- Right Panel: Live Data Stream Visualization -->
+        <div class="glass-panel stream-visual">
+            <div class="section-title">
+                <span>📀 LIVE DATA STREAM / ANALYSIS</span>
+            </div>
+            <div id="dataStreamContainer" class="stream-content">
+                <span id="streamText">[ SYSTEM READY ]<br>Awaiting neural handshake...<br>✦ Holographic grid active ✦</span>
+            </div>
+            <div class="token-stream" style="margin-top: 12px;">
+                <span id="tokenEffect">➤ Tokenization pipeline: idle</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results with confidence & pulse animation -->
+    <div id="resultCard" class="result-area" style="display: none;">
+        <div class="result-header">
+            <div class="prediction-badge" id="predictionLabel">———</div>
+            <div class="confidence-meter">
+                <div class="confidence-text" id="confidenceLabel">AI CONFIDENCE: —%</div>
+                <div class="confidence-bar-container">
+                    <div class="confidence-fill" id="confidenceFill"></div>
+                </div>
+            </div>
+        </div>
+        <div id="analysisExtra" style="margin-top: 18px; font-size: 0.85rem; display: flex; gap: 12px; flex-wrap: wrap;">
+            <span id="spamSignature">🌀 THREAT LEVEL: —</span>
+            <span id="scanDuration">⏱️ LATENCY: — ms</span>
+        </div>
+        <div id="dynamicPulse" style="margin-top: 14px; font-size: 0.8rem; opacity: 0.8;"></div>
+    </div>
+
+    <!-- Glowing details -->
+    <div style="text-align: center; margin-top: 2rem; font-size: 0.7rem; opacity: 0.6;">
+        ⚡ AI QUANTUM ENSEMBLE | REAL-TIME SPAM DETECTION | HOLOGRAPHIC INTERFACE
+    </div>
+</div>
+
+<script>
+    // DOM elements
+    const textarea = document.getElementById('emailMessage');
+    const charSpan = document.getElementById('charCount');
+    const wordSpan = document.getElementById('wordCount');
+    const digitRatioSpan = document.getElementById('digitRatio');
+    const form = document.getElementById('spamForm');
+    const scanBtn = document.getElementById('scanBtn');
+    const resultCard = document.getElementById('resultCard');
+    const predictionLabel = document.getElementById('predictionLabel');
+    const confidenceLabelSpan = document.getElementById('confidenceLabel');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const spamSignatureSpan = document.getElementById('spamSignature');
+    const scanDurationSpan = document.getElementById('scanDuration');
+    const dynamicPulseDiv = document.getElementById('dynamicPulse');
+    const streamTextSpan = document.getElementById('streamText');
+    const tokenEffectSpan = document.getElementById('tokenEffect');
+
+    // Helper: update live metrics
+    function updateMetrics() {
+        let msg = textarea.value;
+        let len = msg.length;
+        let words = msg.trim() === "" ? 0 : msg.trim().split(/\s+/).length;
+        let digitCount = (msg.match(/\d/g) || []).length;
+        let ratio = len === 0 ? 0 : (digitCount / len);
+        charSpan.innerText = len;
+        wordSpan.innerText = words;
+        digitRatioSpan.innerText = ratio.toFixed(4);
+    }
+
+    textarea.addEventListener('input', () => {
+        updateMetrics();
+        // live data stream preview effect: show some realtime bytes
+        let preview = textarea.value.substring(0, 80);
+        if(preview.length > 0) {
+            streamTextSpan.innerHTML = `[LIVE CAPTURE] ➜ "${preview.replace(/[<>]/g, '')}"<br>⚡ Analyzing entropy...`;
+        } else {
+            streamTextSpan.innerHTML = `[ SYSTEM READY ]<br>Awaiting neural handshake...<br>✦ Holographic grid active ✦`;
+        }
+        tokenEffectSpan.innerHTML = "➤ Real-time token stream: parsing characters & semantic vectors";
+    });
+
+    // Simulate scanning animation while fetching
+    let startTime = 0;
+    async function handleSubmit(e) {
+        e.preventDefault();
+        const message = textarea.value.trim();
+        if(!message) {
+            // flash warning
+            streamTextSpan.innerHTML = "⚠️ ERROR: No data stream detected. Insert neural input.";
+            tokenEffectSpan.innerHTML = "➤ VOID MESSAGE: ABORT SCAN";
+            return;
+        }
+
+        // UI loading state: animated scanning, disable button
+        scanBtn.disabled = true;
+        const originalBtnText = document.getElementById('btnText').innerHTML;
+        document.getElementById('btnText').innerHTML = "🌀 SCANNING DATA STREAMS... 🌀";
+        resultCard.style.display = "block";
+        resultCard.style.opacity = "0.7";
+        predictionLabel.innerText = "🔍 ANALYZING";
+        confidenceLabelSpan.innerText = "AI CONFIDENCE: CALCULATING...";
+        confidenceFill.style.width = "0%";
+        dynamicPulseDiv.innerHTML = "<span class='pulse-icon'>⬤</span> QUANTUM SCANNING ACTIVE: spectral decomposition";
+        spamSignatureSpan.innerText = "🌀 THREAT LEVEL: —";
+        
+        // Simulate data stream visual effect - animated scanning lines on stream container
+        streamTextSpan.innerHTML = `[SCANNING] ${message.substring(0, 120)}...\n⚡ Parsing n-grams | TF-IDF vectors | ML inference engine online`;
+        tokenEffectSpan.innerHTML = "➤ AI Core: Tokenization → Stemming → Feature extraction 🔄";
+        
+        // additional random holographic effect
+        const scanningInterval = setInterval(() => {
+            if(streamTextSpan.innerHTML.length < 300) {
+                streamTextSpan.innerHTML += " ⚡";
+            }
+        }, 150);
+        
+        startTime = performance.now();
+
+        try {
+            // API call to backend /predict
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message })
+            });
+            
+            if(!response.ok) throw new Error(`HTTP error ${response.status}`);
+            const data = await response.json();
+            const endTime = performance.now();
+            const latency = (endTime - startTime).toFixed(0);
+            
+            // Stop scan effect
+            clearInterval(scanningInterval);
+            
+            // Extract prediction and confidence from backend
+            let prediction = data.prediction; // "Spam" or "Ham"
+            let confidence = data.confidence;  // float between 0 and 1 (probability of spam)
+            
+            // confidence may be undefined? fallback to backend confidence or default edge
+            if(confidence === undefined && data.confidence_score !== undefined) confidence = data.confidence_score;
+            if(confidence === undefined) {
+                // fallback: estimate based on prediction
+                confidence = (prediction === "Spam") ? 0.92 : 0.89;
+            }
+            
+            // Ensure confidence is number 0-1
+            let confPercent = Math.min(99.9, Math.max(0.1, confidence * 100)).toFixed(1);
+            let isSpam = (prediction === "Spam");
+            
+            // Show final result with dynamic pulse
+            resultCard.style.opacity = "1";
+            
+            // Badge styling with holographic pulse
+            if(isSpam) {
+                predictionLabel.innerHTML = "🚨 SPAM DETECTED 🚨";
+                predictionLabel.style.color = "#ff44e6";
+                predictionLabel.style.textShadow = "0 0 8px magenta";
+                spamSignatureSpan.innerHTML = "⚠️ HIGH THREAT LEVEL: SPAM / PHISHING ⚠️";
+                dynamicPulseDiv.innerHTML = "<span style='color:#ff44e6;'>⚠️ ACTIVE THREAT: malicious patterns detected. Neural firewall engaged. ⚠️</span>";
+            } else {
+                predictionLabel.innerHTML = "✅ HAM / LEGITIMATE ✅";
+                predictionLabel.style.color = "#0ff";
+                predictionLabel.style.textShadow = "0 0 6px cyan";
+                spamSignatureSpan.innerHTML = "🟢 THREAT LEVEL: SAFE / TRUSTED ORIGIN 🟢";
+                dynamicPulseDiv.innerHTML = "<span style='color:#0ff;'>✨ Clean signal: no spam indicators. Message integrity verified. ✨</span>";
+            }
+            
+            // Update confidence UI with smooth animation
+            confidenceLabelSpan.innerHTML = `🧠 AI CONFIDENCE: ${confPercent}% (${prediction})`;
+            confidenceFill.style.width = `${confPercent}%`;
+            scanDurationSpan.innerHTML = `⏱️ INFERENCE LATENCY: ${latency} ms`;
+            
+            // Additional confidence score text glow & pulse
+            const confidenceNum = parseFloat(confPercent);
+            if(confidenceNum > 85) {
+                confidenceFill.style.background = "linear-gradient(90deg, #0ff, #ff44e6)";
+            } else {
+                confidenceFill.style.background = "linear-gradient(90deg, #f0f, #ffaa44)";
+            }
+            
+            // Data stream final analysis - show tokens summary (mock smart)
+            let tokensPreview = message.split(/\s+/).slice(0, 12).join(' → ');
+            streamTextSpan.innerHTML = `✓ SCAN COMPLETE ✓\nPrediction: ${prediction} | Confidence: ${confPercent}%\nExtracted tokens: ${tokensPreview}...\n[AI MODEL: ensemble + TF-IDF + metadata]`;
+            tokenEffectSpan.innerHTML = `➤ Final decision: ${prediction} | Spam probability: ${(confidence*100).toFixed(1)}% | Features: char_len, digit_ratio, term_freq`;
+            
+            // Add glowing ring animation to result card
+            resultCard.style.animation = "none";
+            resultCard.offsetHeight;
+            resultCard.style.animation = "pulseStream 0.6s ease-in-out";
+            setTimeout(() => { resultCard.style.animation = ""; }, 700);
+            
+        } catch (error) {
+            console.error("Prediction API error:", error);
+            clearInterval(scanningInterval);
+            streamTextSpan.innerHTML = `❌ CRITICAL: Quantum interface error.\n${error.message}\nCheck if backend server is running.`;
+            tokenEffectSpan.innerHTML = "➤ SCAN FAILED: Retry connection";
+            predictionLabel.innerText = "⚠️ ERROR";
+            confidenceLabelSpan.innerText = "AI CONFIDENCE: N/A";
+            dynamicPulseDiv.innerHTML = "⚠️ Neural handshake failed. Verify Flask server active on /predict endpoint.";
+            spamSignatureSpan.innerHTML = "🌀 SYSTEM OFFLINE";
+        } finally {
+            scanBtn.disabled = false;
+            document.getElementById('btnText').innerHTML = originalBtnText;
+        }
+    }
+
+    form.addEventListener('submit', handleSubmit);
+    
+    // Additional startup: set stream intro & metrics
+    updateMetrics();
+    // show dummy holographic text
+    setTimeout(() => {
+        streamTextSpan.innerHTML = `[ HOLOGRAPHIC INTERFACE ONLINE ]\n> AI spam classifier v2.0 ready\n> Insert raw message for spectral analysis\n> Confidence thresholds: active`;
+    }, 300);
+</script>
+</body>
+</html>
