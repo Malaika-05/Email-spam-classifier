@@ -1,6 +1,6 @@
+joblib
+pandas
 streamlit
+numpy
 scikit-learn
 nltk
-joblib
-numpy
-pandas
